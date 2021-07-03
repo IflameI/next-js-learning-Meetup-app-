@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import Card from '../ui/Card';
 import classes from './NewMeetupForm.module.css';
 
-function NewMeetupForm(props) {
+function NewMeetupForm({ onAddMeetup, isLoading }) {
   const titleInputRef = useRef();
   const imageInputRef = useRef();
   const addressInputRef = useRef();
@@ -24,7 +24,7 @@ function NewMeetupForm(props) {
       description: enteredDescription,
     };
 
-    props.onAddMeetup(meetupData);
+    onAddMeetup(meetupData);
   }
 
   return (
@@ -44,16 +44,12 @@ function NewMeetupForm(props) {
         </div>
         <div className={classes.control}>
           <label htmlFor='description'>Description</label>
-          <textarea
-            id='description'
-            required
-            rows='5'
-            ref={descriptionInputRef}
-          ></textarea>
+          <textarea id='description' required rows='5' ref={descriptionInputRef}></textarea>
         </div>
         <div className={classes.actions}>
           <button>Add Meetup</button>
         </div>
+        {isLoading ? <div className=''>Loading...</div> : ''}
       </form>
     </Card>
   );

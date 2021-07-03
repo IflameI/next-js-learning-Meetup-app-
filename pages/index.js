@@ -1,25 +1,43 @@
+import Head from 'next/head';
+
+import { MongoClient } from 'mongodb';
+
 import { MeetupList } from '../components/';
 
-const DUMMY_MEETUPS = [
-  {
-    id: 'm1',
-    title: 'A First Meetup',
-    image: 'https://tripsget.com/wp-content/uploads/2020/05/DSC06315-1360x907.jpg',
-    address: 'Some address',
-    description: 'This is a first meetup!',
-  },
-  {
-    id: 'm2',
-    title: 'A Second Meetup',
-    image:
-      'https://images.adsttc.com/media/images/5a4f/ca07/f197/cc7c/2700/0048/slideshow/2026viewfromfleetstreet.jpg?1515178486',
-    address: 'Twice Some address ',
-    description: 'This is a second meetup!',
-  },
-];
+export async function getStaticProps() {
+  const client = await MongoClient.connect(
+    'mongodb+srv://user:user123@cluster0.vy4bz.mongodb.net/meetups?retryWrites=true&w=majority',
+  );
+  const db = client.db();
 
-const Home = () => {
-  return <MeetupList meetups={DUMMY_MEETUPS} />;
+  const meetupsCollection = db.collection('meetups');
+
+  const meetups = await meetupsCollection.find().toArray();
+
+  client.close();
+  return {
+    props: {
+      meetups: meetups.map((meetup) => ({
+        title: meetup.title,
+        address: meetup.address,
+        image: meetup.image,
+        id: meetup._id.toString(),
+      })),
+    },
+    revalidate: 1, //При деплое , next js будет пытаться заново сгенерировать страницу(не чаще одного  раза в 1 секунду)
+  };
+}
+
+const Home = ({ meetups }) => {
+  return (
+    <>
+      <Head>
+        <title>React Meetups</title>
+        <meta name='description' content='Some description for google' />
+      </Head>
+      <MeetupList meetups={meetups} />
+    </>
+  );
 };
 
 export default Home;
